@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texas Hold'em Poker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f4c27 0%, #1a5c3a 50%, #0f4c27 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .poker-table {
+            background: radial-gradient(ellipse at center, #1a5c3a 0%, #0f4c27 100%);
+            border: 15px solid #8b4513;
+            border-radius: 200px;
+            padding: 40px 60px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 0 50px rgba(0, 0, 0, 0.3);
+            max-width: 1000px;
+            width: 100%;
+            position: relative;
+        }
+
+        .dealer-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .opponent-hand {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .community-cards {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            min-height: 140px;
+            align-items: center;
+        }
+
+        .pot-area {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .pot-chips {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .player-area {
+            margin-top: 30px;
+        }
+
+        .player-hand {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            width: 80px;
+            height: 112px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+        }
+
+        .card.red {
+            color: #e74c3c;
+        }
+
+        .card.black {
+            color: #000;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+        }
+
+        .card-value {
+            font-size: 1.2em;
+        }
+
+        .card-suit {
+            font-size: 2em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .btn-action:hover {
+            background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+            transform: translateY(-2px);
+        }
+
+        .btn-fold {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .btn-fold:hover {
+            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+            transform: translateY(-2px);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            font-size: 18px;
+            padding: 15px 40px;
+        }
+
+        .btn-start:hover {
+            background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .player-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            gap: 20px;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1em;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-box strong {
+            color: #FFD700;
+        }
+
+        .message {
+            text-align: center;
+            color: #FFD700;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .bet-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .bet-input {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 2px solid #FFD700;
+            width: 120px;
+            text-align: center;
+        }
+
+        .hand-name {
+            text-align: center;
+            color: #FFD700;
+            font-size: 1.1em;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .poker-table {
+                padding: 20px;
+                border-radius: 100px;
+            }
+
+            .card {
+                width: 60px;
+                height: 84px;
+                font-size: 1.2em;
+            }
+
+            .card-value {
+                font-size: 1em;
+            }
+
+            .card-suit {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="poker-table">
+        <div class="dealer-area">
+            <div class="opponent-hand" id="opponentHand"></div>
+            <div class="info-box">
+                Opponent Chips: <strong id="opponentChips">1000</strong>
+            </div>
+        </div>
+
+        <div class="pot-area">
+            <div class="pot-chips">Pot: $<span id="pot">0</span></div>
+        </div>
+
+        <div class="message" id="message">Welcome to Texas Hold'em!</div>
+
+        <div class="community-cards" id="communityCards"></div>
+
+        <div class="player-area">
+            <div class="player-info">
+                <div class="info-box">
+                    Your Chips: <strong id="playerChips">1000</strong>
+                </div>
+                <div class="info-box">
+                    Current Bet: <strong id="currentBet">0</strong>
+                </div>
+            </div>
+
+            <div class="hand-name" id="handName"></div>
+            <div class="player-hand" id="playerHand"></div>
+
+            <div class="bet-controls" id="betControls" style="display: none;">
+                <input type="number" id="betAmount" class="bet-input" min="10" step="10" value="50">
+                <button class="btn btn-action" onclick="placeBet()">Bet/Raise</button>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-start" onclick="startNewHand()" id="startBtn">Deal Cards</button>
+                <button class="btn btn-action" onclick="playerCheck()" id="checkBtn" style="display: none;">Check</button>
+                <button class="btn btn-action" onclick="playerCall()" id="callBtn" style="display: none;">Call</button>
+                <button class="btn btn-fold" onclick="playerFold()" id="foldBtn" style="display: none;">Fold</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        
+        let deck = [];
+        let playerHand = [];
+        let opponentHand = [];
+        let communityCards = [];
+        let playerChips = 1000;
+        let opponentChips = 1000;
+        let pot = 0;
+        let currentBet = 0;
+        let playerBet = 0;
+        let opponentBet = 0;
+        let gamePhase = 'preflop';
+        let gameActive = false;
+
+        function createDeck() {
+            deck = [];
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push({ suit, value });
+                }
+            }
+            return deck;
+        }
+
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        function dealCard() {
+            return deck.pop();
+        }
+
+        function renderCard(card, faceDown = false) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card';
+            
+            if (faceDown) {
+                cardDiv.className += ' card-back';
+                cardDiv.innerHTML = '?';
+            } else {
+                const isRed = card.suit === '♥' || card.suit === '♦';
+                cardDiv.className += isRed ? ' red' : ' black';
+                cardDiv.innerHTML = `
+                    <div class="card-value">${card.value}</div>
+                    <div class="card-suit">${card.suit}</div>
+                    <div class="card-value">${card.value}</div>
+                `;
+            }
+            
+            return cardDiv;
+        }
+
+        function updateDisplay() {
+            document.getElementById('playerChips').textContent = playerChips;
+            document.getElementById('opponentChips').textContent = opponentChips;
+            document.getElementById('pot').textContent = pot;
+            document.getElementById('currentBet').textContent = currentBet;
+
+            const playerHandDiv = document.getElementById('playerHand');
+            playerHandDiv.innerHTML = '';
+            playerHand.forEach(card => {
+                playerHandDiv.appendChild(renderCard(card));
+            });
+
+            const opponentHandDiv = document.getElementById('opponentHand');
+            opponentHandDiv.innerHTML = '';
+            opponentHand.forEach(card => {
+                opponentHandDiv.appendChild(renderCard(card, gameActive));
+            });
+
+            const communityDiv = document.getElementById('communityCards');
+            communityDiv.innerHTML = '';
+            communityCards.forEach(card => {
+                communityDiv.appendChild(renderCard(card));
+            });
+
+            if (playerHand.length === 2 && communityCards.length >= 3) {
+                const handRank = evaluateHand([...playerHand, ...communityCards]);
+                document.getElementById('handName').textContent = handRank.name;
+            } else {
+                document.getElementById('handName').textContent = '';
+            }
+        }
+
+        function startNewHand() {
+            if (playerChips < 10 || opponentChips < 10) {
+                showMessage('Game Over! ' + (playerChips > opponentChips ? 'You win!' : 'Opponent wins!'));
+                return;
+            }
+
+            createDeck();
+            shuffleDeck();
+            
+            playerHand = [dealCard(), dealCard()];
+            opponentHand = [dealCard(), dealCard()];
+            communityCards = [];
+            pot = 0;
+            currentBet = 0;
+            playerBet = 0;
+            opponentBet = 0;
+            gamePhase = 'preflop';
+            gameActive = true;
+
+            const smallBlind = 10;
+            const bigBlind = 20;
+            
+            playerChips -= smallBlind;
+            opponentChips -= bigBlind;
+            pot = smallBlind + bigBlind;
+            currentBet = bigBlind;
+            opponentBet = bigBlind;
+
+            updateDisplay();
+            showMessage('New hand! Small blind: $10, Big blind: $20');
+            showActionButtons(true);
+        }
+
+        function showActionButtons(show) {
+            document.getElementById('startBtn').style.display = show ? 'none' : 'inline-block';
+            document.getElementById('checkBtn').style.display = show && playerBet === currentBet ? 'inline-block' : 'none';
+            document.getElementById('callBtn').style.display = show && playerBet < currentBet ? 'inline-block' : 'none';
+            document.getElementById('foldBtn').style.display = show ? 'inline-block' : 'none';
+            document.getElementById('betControls').style.display = show ? 'flex' : 'none';
+        }
+
+        function showMessage(msg) {
+            document.getElementById('message').textContent = msg;
+        }
+
+        function playerCheck() {
+            if (playerBet < currentBet) {
+                showMessage("You must call or raise!");
+                return;
+            }
+            showMessage("You checked");
+            opponentAction();
+        }
+
+        function playerCall() {
+            const callAmount = currentBet - playerBet;
+            if (playerChips < callAmount) {
+                showMessage("Not enough chips!");
+                return;
+            }
+            playerChips -= callAmount;
+            pot += callAmount;
+            playerBet = currentBet;
+            updateDisplay();
+            showMessage(`You called $${callAmount}`);
+            opponentAction();
+        }
+
+        function placeBet() {
+            const betAmount = parseInt(document.getElementById('betAmount').value);
+            const totalBet = betAmount + playerBet;
+            
+            if (betAmount < currentBet - playerBet) {
+                showMessage("Bet must be at least the current bet!");
+                return;
+            }
+            
+            if (playerChips < betAmount) {
+                showMessage("Not enough chips!");
+                return;
+            }
+
+            playerChips -= betAmount;
+            pot += betAmount;
+            playerBet += betAmount;
+            currentBet = Math.max(currentBet, playerBet);
+            updateDisplay();
+            showMessage(`You bet $${betAmount}`);
+            opponentAction();
+        }
+
+        function playerFold() {
+            showMessage("You folded. Opponent wins!");
+            opponentChips += pot;
+            endHand();
+        }
+
+        function opponentAction() {
+            setTimeout(() => {
+                const random = Math.random();
+                const callAmount = currentBet - opponentBet;
+
+                if (callAmount === 0) {
+                    showMessage("Opponent checks");
+                    advancePhase();
+                } else if (random < 0.3) {
+                    showMessage("Opponent folds!");
+                    playerChips += pot;
+                    endHand();
+                } else if (random < 0.8 || opponentChips < callAmount) {
+                    const actualCall = Math.min(callAmount, opponentChips);
+                    opponentChips -= actualCall;
+                    pot += actualCall;
+                    opponentBet += actualCall;
+                    updateDisplay();
+                    showMessage(`Opponent calls $${actualCall}`);
+                    advancePhase();
+                } else {
+                    const raiseAmount = Math.min(Math.floor(Math.random() * 100) + 50, opponentChips);
+                    opponentChips -= raiseAmount;
+                    pot += raiseAmount;
+                    opponentBet += raiseAmount;
+                    currentBet = Math.max(currentBet, opponentBet);
+                    updateDisplay();
+                    showMessage(`Opponent raises $${raiseAmount}`);
+                    showActionButtons(true);
+                }
+            }, 1000);
+        }
+
+        function advancePhase() {
+            if (gamePhase === 'preflop') {
+                communityCards.push(dealCard(), dealCard(), dealCard());
+                gamePhase = 'flop';
+                showMessage("Flop dealt!");
+            } else if (gamePhase === 'flop') {
+                communityCards.push(dealCard());
+                gamePhase = 'turn';
+                showMessage("Turn dealt!");
+            } else if (gamePhase === 'turn') {
+                communityCards.push(dealCard());
+                gamePhase = 'river';
+                showMessage("River dealt!");
+            } else {
+                showdown();
+                return;
+            }
+
+            currentBet = 0;
+            playerBet = 0;
+            opponentBet = 0;
+            updateDisplay();
+            showActionButtons(true);
+        }
+
+        function showdown() {
+            gameActive = false;
+            updateDisplay();
+
+            const playerHandRank = evaluateHand([...playerHand, ...communityCards]);
+            const opponentHandRank = evaluateHand([...opponentHand, ...communityCards]);
+
+            let winner = '';
+            if (playerHandRank.rank > opponentHandRank.rank) {
+                winner = 'You win with ' + playerHandRank.name + '!';
+                playerChips += pot;
+            } else if (opponentHandRank.rank > playerHandRank.rank) {
+                winner = 'Opponent wins with ' + opponentHandRank.name + '!';
+                opponentChips += pot;
+            } else {
+                winner = "It's a tie!";
+                playerChips += pot / 2;
+                opponentChips += pot / 2;
+            }
+
+            showMessage(winner);
+            endHand();
+        }
+
+        function endHand() {
+            gameActive = false;
+            updateDisplay();
+            showActionButtons(false);
+        }
+
+        function evaluateHand(cards) {
+            const valueCounts = {};
+            const suitCounts = {};
+            
+            cards.forEach(card => {
+                valueCounts[card.value] = (valueCounts[card.value] || 0) + 1;
+                suitCounts[card.suit] = (suitCounts[card.suit] || 0) + 1;
+            });
+
+            const counts = Object.values(valueCounts).sort((a, b) => b - a);
+            const isFlush = Object.values(suitCounts).some(count => count >= 5);
+
+            if (counts[0] === 4) return { rank: 7, name: 'Four of a Kind' };
+            if (counts[0] === 3 && counts[1] === 2) return { rank: 6, name: 'Full House' };
+            if (isFlush) return { rank: 5, name: 'Flush' };
+            if (counts[0] === 3) return { rank: 3, name: 'Three of a Kind' };
+            if (counts[0] === 2 && counts[1] === 2) return { rank: 2, name: 'Two Pair' };
+            if (counts[0] === 2) return { rank: 1, name: 'One Pair' };
+            
+            return { rank: 0, name: 'High Card' };
+        }
+
+        updateDisplay();
+    </script>
+</body>
+</html>
